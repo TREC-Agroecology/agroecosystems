@@ -1,5 +1,6 @@
-library(magrittr) # need to run every time you start R and want to use %>%
 setwd("/Users/sreader/Documents/GitHub/agroecosystems")
+library(tidyverse)
+library(agricolae)
 biomass_data <- read_csv("data/harvest-012019-ECHO.csv")
 
 biomass_data <- biomass_data %>%
@@ -21,7 +22,7 @@ moisture_species <- moisture_content %>%
 species <- c("SH","SS","VB")
 
 ## ANOVA for TotalBiomass
-sink("data/output/biomass_anova.txt")
+sink("data/output/biomass_anova_ECHO.txt")
 for(s in species){
   moisture_conversion <- moisture_species %>%
     filter(CropSp == s)
@@ -48,10 +49,11 @@ sink()
 
 ## Land Equivalent Ratio
 data_for_LER <- total_biomass %>%
-  select(Location, CropTrt, CropSp, avg_LeavesStems_g_1m2) %>%
+  filter(Location == "AG") %>%
+  select(Location, CropTrt, CropSp, avg_LeavesStems_tha) %>%
   group_by(Location, CropTrt, CropSp) %>%
-  summarize(site_avg_biomass = mean(avg_LeavesStems_g_1m2),
-            site_sd_biomass = sd(avg_LeavesStems_g_1m2))
+  summarize(site_avg_biomass = mean(avg_LeavesStems_tha),
+            site_sd_biomass = sd(avg_LeavesStems_tha))
 
 spp_combos <- data.frame(sp_1 = c("SH", "SH", "SS"), sp_2 = c("SS", "VB", "VB"))
 LER_output <- data.frame(location = c(), sp_1 = c(), sp_2 = c(), LER = c())
@@ -76,5 +78,5 @@ for (l in unique(data_for_LER$Location)){
   }
 }
 
-write_csv(LER_output, "data/output/LER.csv")
+write_csv(LER_output, "data/output/LER-ECHO.csv")
 
