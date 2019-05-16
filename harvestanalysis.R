@@ -5,7 +5,7 @@ library(tidyverse)
 library(agricolae)
 
 ## Import and Manage Data
-biomass_data <- read_csv("data/harvest-112019-TREC.csv")
+biomass_data <- read_csv("data/harvest-012019-TREC.csv")
 
 biomass_data <- biomass_data %>%
   mutate(Location = str_sub(str_extract(biomass_data$PlotName, ".._"), end=2),
