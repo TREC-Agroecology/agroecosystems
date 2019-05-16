@@ -1,4 +1,4 @@
-﻿PlotID,PlotName,CropName,SamplingWeeks,Month,Day,Year,Height_mm,Chlorophyll_CI
+﻿PlotID,PlotName,CropName,SamplingWeek,Month,Day,Year,Height_mm,Chlorophyll_CI
 1,VF_SHSS-1,SH,4,December,15,2018,185,28
 1,VF_SHSS-1,SH,4,December,15,2018,270,25.4
 1,VF_SHSS-1,SH,4,December,15,2018,140,21.2
