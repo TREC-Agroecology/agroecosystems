@@ -1,0 +1,7 @@
+Location,CropTrt,avg_LeavesStems_tha,sd_LeavesStems_tha,avg_SOM_percent,sd_SOM_percent,avg_TP_mgkg,sd_TP_mgkg
+HH,SHSS,11.39,2.91,19.04,2.79,26.58,9.35
+HH,SS,23.43,8.74,16.77,1.41,27,6.07
+HH,SSVB,14.77,2.85,18.05,2.36,27.36,7.22
+VF,SHSS,3.43,1.64,6.23,0.52,80.83,12.52
+VF,SS,5.33,1.64,6.07,0.66,71.27,3.02
+VF,SSVB,4.49,1.68,7.32,1.2,70.11,9.62
