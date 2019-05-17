@@ -3,7 +3,7 @@
 
 library(tidyverse)
 
-crops <- c("SH", "SS")
+crops <- c("SH", "SS", "VB")
 
 ## Summer Data
 
