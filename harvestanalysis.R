@@ -7,13 +7,18 @@ library(agricolae)
 ## Import and Manage Data
 biomass_data <- read_csv("data/harvest-012019-TREC.csv")
 
+seeding_rate_table <- data.frame(CropTrt = c("SH", "SS", "VB",
+                                             "SHSS", "SHVB", "SSVB"),
+                                 seeding_rate = c(1, 1, 1, 0.5, 0.5, 0.5))
+
 biomass_data <- biomass_data %>%
-  mutate(Location = str_sub(str_extract(biomass_data$PlotName, ".._"), end=2),
-         CropTrt = str_sub(str_extract(biomass_data$PlotName, "_.*-"), 2,-2),
-         LeavesStems_tha = LeavesStems_g_1m2*0.01)
+  separate(PlotName, c("Location_CropTrt", "Row"), sep = "-") %>%
+  separate(Location_CropTrt, c("Location", "CropTrt"), sep = "_", remove=FALSE) %>%
+  mutate(LeavesStems_tha = LeavesStems_g_1m2*0.01) %>%
+  left_join(seeding_rate_table)
 
 total_biomass <- biomass_data %>%
-  group_by(PlotID, Location, CropTrt, CropSp) %>%
+  group_by(PlotID, CropSp, CropTrt, Location_CropTrt) %>%
   summarize(sum_LeavesStems_tha = sum(LeavesStems_tha),
             avg_LeavesStems_tha = mean(LeavesStems_tha))
 
@@ -33,21 +38,21 @@ for(s in species){
   moisture_factor <- (100-moisture_conversion$avg_MC)/100
   
   data_for_analysis <- total_biomass %>%
-    select(Location, CropTrt, CropSp, avg_LeavesStems_tha) %>%
+    select(PlotID, CropSp, CropTrt, Location_CropTrt, avg_LeavesStems_tha) %>%
     mutate(avg_drymass = avg_LeavesStems_tha*moisture_factor) %>%
     filter(CropSp == s)
   
-  test <- aov(avg_LeavesStems_tha ~  Location + CropTrt + Location*CropTrt, data=data_for_analysis)
-  print(s)
+  test <- aov(avg_LeavesStems_tha ~  CropTrt + Location_CropTrt, data=data_for_analysis)
+  print(paste(s, "Fresh Mass\n"))
   print(summary(test))
   print(HSD.test(test, "CropTrt")$groups)
-  print(HSD.test(test, "Location")$groups)
+  print(HSD.test(test, "Location_CropTrt")$groups)
   
-  test <- aov(avg_drymass ~  Location + CropTrt + Location*CropTrt, data=data_for_analysis)
+  test <- aov(avg_drymass ~  CropTrt + Location_CropTrt, data=data_for_analysis)
   print(s)
   print(summary(test))
   print(HSD.test(test, "CropTrt")$groups)
-  print(HSD.test(test, "Location")$groups)
+  print(HSD.test(test, "Location_CropTrt")$groups)
 }
 sink()
 
