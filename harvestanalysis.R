@@ -5,13 +5,12 @@ library(tidyverse)
 library(agricolae)
 
 ## Import and Manage Data
-biomass_data <- read_csv("data/harvest-012019-TREC.csv")
 
 seeding_rate_table <- data.frame(CropTrt = c("SH", "SS", "VB",
                                              "SHSS", "SHVB", "SSVB"),
                                  seeding_rate = c(1, 1, 1, 0.5, 0.5, 0.5))
 
-biomass_data <- biomass_data %>%
+biomass_data <- read_csv("data/harvest-012019-TREC.csv") %>% 
   separate(PlotName, c("Location_CropTrt", "Row"), sep = "-") %>%
   separate(Location_CropTrt, c("Location", "CropTrt"), sep = "_", remove=FALSE) %>%
   mutate(LeavesStems_tha = LeavesStems_g_1m2*0.01) %>%
@@ -19,14 +18,17 @@ biomass_data <- biomass_data %>%
 
 total_biomass <- biomass_data %>%
   group_by(PlotID, CropSp, CropTrt, Location_CropTrt, seeding_rate) %>%
-  summarize(avg_LeavesStems_tha = mean(LeavesStems_tha))
+  summarize(avg_LeavesStems_tha = mean(LeavesStems_tha),
+            avg_StemCount = mean(StemCounts))
 
 total_biomass_summary <- total_biomass %>%
   group_by(Location_CropTrt, CropSp) %>%
   summarize(Avg_LeavesStems_tha = mean(avg_LeavesStems_tha),
             SD_LeavesStems_tha = sd(avg_LeavesStems_tha),
             Avg_LeavesStems_seed = mean(avg_LeavesStems_tha/seeding_rate),
-            SD_LeavesStems_seed = sd(avg_LeavesStems_tha/seeding_rate))
+            SD_LeavesStems_seed = sd(avg_LeavesStems_tha/seeding_rate),
+            Avg_StemCount = mean(avg_StemCount),
+            SD_StemCount = sd(avg_StemCount))
 
 moisture_content <- read_csv("data/moisture-content.csv")
 moisture_species <- moisture_content %>%
@@ -45,7 +47,7 @@ for(s in species){
   
   data_for_analysis <- total_biomass %>%
     select(PlotID, CropSp, CropTrt, Location_CropTrt, 
-           avg_LeavesStems_tha, seeding_rate) %>%
+           avg_LeavesStems_tha, avg_StemCount, seeding_rate) %>%
     mutate(avg_drymass = avg_LeavesStems_tha*moisture_factor) %>%
     filter(CropSp == s)
   
@@ -63,6 +65,12 @@ for(s in species){
   
   test <- aov(avg_LeavesStems_tha/seeding_rate ~  CropTrt + Location_CropTrt, data=data_for_analysis)
   print(paste(s, "- Fresh Mass / Seeding Rate"))
+  print(summary(test))
+  print(HSD.test(test, "CropTrt")$groups)
+  print(HSD.test(test, "Location_CropTrt")$groups)
+  
+  test <- aov(avg_LeavesStems_tha/avg_StemCount ~  CropTrt + Location_CropTrt, data=data_for_analysis)
+  print(paste(s, "- Fresh Mass / Stem Count"))
   print(summary(test))
   print(HSD.test(test, "CropTrt")$groups)
   print(HSD.test(test, "Location_CropTrt")$groups)
