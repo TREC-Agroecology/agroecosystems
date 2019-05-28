@@ -7,7 +7,7 @@
 
 ### Planting & Harvest Season
 
-- `summer`: May 3, 2018 - Aug 2018
+- `summer`: May 3, 2018 - Aug 22, 2018
 - `winter`: Nov 2018 - Jan 2019
 
 - `summer`: May 13, 2019 - Aug 2019
