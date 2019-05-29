@@ -17,7 +17,7 @@ biomass_data <- read_csv("data/harvest-012019-TREC.csv") %>%
   left_join(seeding_rate_table)
 
 total_biomass <- biomass_data %>%
-  group_by(PlotID, CropSp, CropTrt, Location_CropTrt, seeding_rate) %>%
+  group_by(PlotID, CropSp, Location, CropTrt, Location_CropTrt, seeding_rate) %>%
   summarize(avg_LeavesStems_tha = mean(LeavesStems_tha),
             avg_StemCount = mean(StemCounts))
 
@@ -30,23 +30,44 @@ total_biomass_summary <- total_biomass %>%
             Avg_StemCount = mean(avg_StemCount),
             SD_StemCount = sd(avg_StemCount))
 
+combined_biomass <- total_biomass %>%
+  group_by(PlotID, Location, CropTrt, Location_CropTrt) %>%
+  summarize(sum_LeavesStems_tha = sum(avg_LeavesStems_tha))
+
 moisture_content <- read_csv("data/moisture-content.csv")
 moisture_species <- moisture_content %>%
   group_by(CropSp) %>%
   summarize(avg_MC = mean(AGB_MC))
 
-
 species <- c("SH", "SS", "VB")
 
-## ANOVA for TotalBiomass
+
+## ANOVA for total biomass per treatment
+
+sink("output/CombinedBiomass_anova.txt")
+  
+test <- aov(sum_LeavesStems_tha ~  Location + CropTrt + Location*CropTrt, data=combined_biomass)
+print(summary(test))
+print(HSD.test(test, "Location")$groups)
+print(HSD.test(test, "CropTrt")$groups)
+
+test <- aov(sum_LeavesStems_tha ~  CropTrt + Location_CropTrt, data=combined_biomass)
+print(summary(test))
+print(HSD.test(test, "CropTrt")$groups)
+print(HSD.test(test, "Location_CropTrt")$groups)
+
+sink()
+
+## ANOVA for average stem biomass per species.
 sink("output/Biomass_anova.txt")
+
 for(s in species){
   moisture_conversion <- moisture_species %>%
     filter(CropSp == s)
   moisture_factor <- (100-moisture_conversion$avg_MC)/100
   
   data_for_analysis <- total_biomass %>%
-    select(PlotID, CropSp, CropTrt, Location_CropTrt, 
+    select(PlotID, CropSp, Location, CropTrt, Location_CropTrt, 
            avg_LeavesStems_tha, avg_StemCount, seeding_rate) %>%
     mutate(avg_drymass = avg_LeavesStems_tha*moisture_factor) %>%
     filter(CropSp == s)
@@ -74,15 +95,21 @@ for(s in species){
   print(summary(test))
   print(HSD.test(test, "CropTrt")$groups)
   print(HSD.test(test, "Location_CropTrt")$groups)
+  
+  test <- aov(avg_LeavesStems_tha/avg_StemCount ~  Location + CropTrt + Location*CropTrt, data=data_for_analysis)
+  print(paste(s, "- Fresh Mass / Stem Count"))
+  print(summary(test))
+  print(HSD.test(test, "Location")$groups)
+  print(HSD.test(test, "CropTrt")$groups)
 }
 sink()
 
 ## Land Equivalent Ratio
 data_for_LER <- total_biomass %>%
-  select(Location, CropTrt, CropSp, avg_LeavesStems_g_1m2) %>%
+  select(Location, CropTrt, CropSp, avg_LeavesStems_tha) %>%
   group_by(Location, CropTrt, CropSp) %>%
-  summarize(site_avg_biomass = mean(avg_LeavesStems_g_1m2),
-            site_sd_biomass = sd(avg_LeavesStems_g_1m2))
+  summarize(site_avg_biomass = mean(avg_LeavesStems_tha),
+            site_sd_biomass = sd(avg_LeavesStems_tha))
 
 spp_combos <- data.frame(sp_1 = c("SH", "SH", "SS"), sp_2 = c("SS", "VB", "VB"))
 LER_output <- data.frame(location = c(), sp_1 = c(), sp_2 = c(), LER = c())
