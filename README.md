@@ -10,7 +10,7 @@
 - `summer`: May 10, 2018 - Aug 15, 2018
 - `winter`: Nov 1, 2018 - Jan 11, 2019
 
-- `summer`: May 13, 2019 - Aug 2019
+- `summer`: May 13, 2019 - July, 11 2019
 - `winter`: Nov 2019 - Jan 2020
 
 ### Experimental Design
