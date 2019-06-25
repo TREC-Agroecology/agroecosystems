@@ -58,6 +58,15 @@ print(HSD.test(test, "Location_CropTrt")$groups)
 
 sink()
 
+## Raster for total biomass per treatment
+
+global_avg_combined_biomass <- mean(log(combined_biomass$sum_LeavesStems_tha))
+global_sd_combined_biomass <- sd(log(combined_biomass$sum_LeavesStems_tha))
+
+combined_biomass_std <- combined_biomass %>%
+  mutate(sum_biomass_std = (sum_LeavesStems_tha-global_avg_combined_biomass)/
+           global_sd_combined_biomass)
+
 ## ANOVA for average stem biomass per species.
 sink("output/Biomass_anova.txt")
 
