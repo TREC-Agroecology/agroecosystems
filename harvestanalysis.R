@@ -3,6 +3,7 @@
 
 library(tidyverse)
 library(agricolae)
+library(raster)
 
 ## Import and Manage Data
 
@@ -64,8 +65,28 @@ global_avg_combined_biomass <- mean(log(combined_biomass$sum_LeavesStems_tha))
 global_sd_combined_biomass <- sd(log(combined_biomass$sum_LeavesStems_tha))
 
 combined_biomass_std <- combined_biomass %>%
-  mutate(sum_biomass_std = (sum_LeavesStems_tha-global_avg_combined_biomass)/
+  mutate(sum_biomass_std = (log(sum_LeavesStems_tha)-global_avg_combined_biomass)/
            global_sd_combined_biomass)
+
+plotid_matrix <- matrix(data = c(1:144), nrow=24, ncol=6, byrow=TRUE)
+biomass_std_matrix <- matrix(nrow=24, ncol=6)
+
+for (i in 1:24){
+  for (j in 1:6){
+    plot_id <- plotid_matrix[i,j]
+    biomass_std_matrix[i,j] <- combined_biomass_std$sum_biomass_std[plot_id]
+  }
+}
+
+par(mfrow=c(2,2))
+plot(raster(biomass_std_matrix[1:6,]), axes=FALSE, 
+     zlim=c(min(combined_biomass_std$sum_biomass_std), max(combined_biomass_std$sum_biomass_std)))
+plot(raster(biomass_std_matrix[7:12,]), axes=FALSE, 
+     zlim=c(min(combined_biomass_std$sum_biomass_std), max(combined_biomass_std$sum_biomass_std)))
+plot(raster(biomass_std_matrix[13:18,]), axes=FALSE, 
+     zlim=c(min(combined_biomass_std$sum_biomass_std), max(combined_biomass_std$sum_biomass_std)))
+plot(raster(biomass_std_matrix[19:24,]), axes=FALSE, 
+     zlim=c(min(combined_biomass_std$sum_biomass_std), max(combined_biomass_std$sum_biomass_std)))
 
 ## ANOVA for average stem biomass per species.
 sink("output/Biomass_anova.txt")
