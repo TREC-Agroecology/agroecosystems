@@ -4,6 +4,53 @@
 library(tidyverse)
 library(agricolae)
 library(raster)
+library(RColorBrewer)
+
+matrix_plot <- function(data_for_matrix){
+  plotid_matrix <- matrix(data = c(1:144), nrow=24, ncol=6, byrow=TRUE)
+  biomass_std_matrix <- matrix(nrow=24, ncol=6)
+  biomass_std_names <- matrix(nrow=24, ncol=6)
+  
+  for (i in 1:24){
+    for (j in 1:6){
+      plot_id <- plotid_matrix[i,j]
+      biomass_std_matrix[i,j] <- data_for_matrix$sum_biomass_std[plot_id]
+      biomass_std_names[i,j] <- data_for_matrix$CropTrt[plot_id]
+    }
+  }
+  
+  par(mfrow=c(2,2))
+  plot(raster(biomass_std_matrix[1:6,]), axes=FALSE, 
+       zlim=c(min(data_for_matrix$sum_biomass_std), max(data_for_matrix$sum_biomass_std)),
+       breaks= c(3, 2, 1, 0, -1, -2, -3), col= brewer.pal(7, "RdBu"))
+  text(x=rep(c(0.1, 0.3, 0.5, 0.65, 0.8, 1),6), 
+       y=rep(c(1, 5/6, 4/6, 3/6, 2/6, 1/6),each=6),
+       label=data_for_matrix$CropTrt[1:36], adj=c(1,1))
+  plot(raster(biomass_std_matrix[7:12,]), axes=FALSE, 
+       zlim=c(min(data_for_matrix$sum_biomass_std), max(data_for_matrix$sum_biomass_std)),
+       breaks= c(3, 2, 1, 0, -1, -2, -3), col= brewer.pal(7, "RdBu"))
+  text(x=rep(c(0.1, 0.3, 0.5, 0.65, 0.8, 1),6), 
+       y=rep(c(1, 5/6, 4/6, 3/6, 2/6, 1/6),each=6),
+       label=data_for_matrix$CropTrt[36:72], adj=c(1,1))
+  plot(raster(biomass_std_matrix[13:18,]), axes=FALSE, 
+       zlim=c(min(data_for_matrix$sum_biomass_std), max(data_for_matrix$sum_biomass_std)),
+       breaks= c(3, 2, 1, 0, -1, -2, -3), col= brewer.pal(7, "RdBu"))
+  text(x=rep(c(0.1, 0.3, 0.5, 0.65, 0.8, 1),6), 
+       y=rep(c(1, 5/6, 4/6, 3/6, 2/6, 1/6),each=6),
+       label=data_for_matrix$CropTrt[73:108], adj=c(1,1))
+  plot(raster(biomass_std_matrix[19:24,]), axes=TRUE, 
+       zlim=c(min(data_for_matrix$sum_biomass_std), max(data_for_matrix$sum_biomass_std)),
+       breaks= c(3, 2, 1, 0, -1, -2, -3), col= brewer.pal(7, "RdBu"))
+  text(x=rep(c(0.1, 0.3, 0.5, 0.65, 0.8, 1),6), 
+       y=rep(c(1, 5/6, 4/6, 3/6, 2/6, 1/6),each=6),
+       label=data_for_matrix$CropTrt[109:144], adj=c(1,1))
+}
+
+treatment_standardization <- function(trt, std_table, mass_value) {
+  trt_record <- filter(std_table, CropTrt == trt)
+  std_value <- (log(mass_value) - trt_record$mean_biomass)/ trt_record$sd_biomass
+  return(std_value)
+}
 
 ## Import and Manage Data
 
@@ -31,16 +78,13 @@ total_biomass_summary <- total_biomass %>%
             Avg_StemCount = mean(avg_StemCount),
             SD_StemCount = sd(avg_StemCount))
 
-combined_biomass <- total_biomass %>%
-  group_by(PlotID, Location, CropTrt, Location_CropTrt) %>%
-  summarize(sum_LeavesStems_tha = sum(avg_LeavesStems_tha))
-
 moisture_content <- read_csv("data/moisture-content.csv")
 moisture_species <- moisture_content %>%
   group_by(CropSp) %>%
   summarize(avg_MC = mean(AGB_MC))
 
 species <- c("SH", "SS", "VB")
+treatments <- c("SH", "SS", "VB", "SHSS", "SHVB", "SSVB")
 
 
 ## ANOVA for total biomass per treatment
@@ -61,32 +105,32 @@ sink()
 
 ## Raster for total biomass per treatment
 
+combined_biomass <- total_biomass %>%
+  group_by(PlotID, Location, CropTrt, Location_CropTrt) %>%
+  summarize(sum_LeavesStems_tha = sum(avg_LeavesStems_tha))
+
 global_avg_combined_biomass <- mean(log(combined_biomass$sum_LeavesStems_tha))
 global_sd_combined_biomass <- sd(log(combined_biomass$sum_LeavesStems_tha))
 
 combined_biomass_std <- combined_biomass %>%
-  mutate(sum_biomass_std = (log(sum_LeavesStems_tha)-global_avg_combined_biomass)/
+  mutate(sum_biomass_std = ((log(sum_LeavesStems_tha)-global_avg_combined_biomass))/
            global_sd_combined_biomass)
 
-plotid_matrix <- matrix(data = c(1:144), nrow=24, ncol=6, byrow=TRUE)
-biomass_std_matrix <- matrix(nrow=24, ncol=6)
+png(file="output/combined_std.png", width= 1700, height=1100)
+matrix_plot(combined_biomass_std)
+dev.off()
 
-for (i in 1:24){
-  for (j in 1:6){
-    plot_id <- plotid_matrix[i,j]
-    biomass_std_matrix[i,j] <- combined_biomass_std$sum_biomass_std[plot_id]
-  }
-}
+trt_avg_combined_biomass <- combined_biomass %>% 
+  group_by(CropTrt) %>% 
+  summarize(mean_biomass = mean(log(sum_LeavesStems_tha)),
+            sd_biomass = sd(log(sum_LeavesStems_tha)))
 
-par(mfrow=c(2,2))
-plot(raster(biomass_std_matrix[1:6,]), axes=FALSE, 
-     zlim=c(min(combined_biomass_std$sum_biomass_std), max(combined_biomass_std$sum_biomass_std)))
-plot(raster(biomass_std_matrix[7:12,]), axes=FALSE, 
-     zlim=c(min(combined_biomass_std$sum_biomass_std), max(combined_biomass_std$sum_biomass_std)))
-plot(raster(biomass_std_matrix[13:18,]), axes=FALSE, 
-     zlim=c(min(combined_biomass_std$sum_biomass_std), max(combined_biomass_std$sum_biomass_std)))
-plot(raster(biomass_std_matrix[19:24,]), axes=FALSE, 
-     zlim=c(min(combined_biomass_std$sum_biomass_std), max(combined_biomass_std$sum_biomass_std)))
+combined_biomass_std_trt <- combined_biomass %>% 
+  mutate(sum_biomass_std = treatment_standardization(CropTrt, trt_avg_combined_biomass, sum_LeavesStems_tha))
+
+png(file="output/combined_std_trt.png", width= 1700, height=1100)
+matrix_plot(combined_biomass_std_trt)
+dev.off()
 
 ## ANOVA for average stem biomass per species.
 sink("output/Biomass_anova.txt")
