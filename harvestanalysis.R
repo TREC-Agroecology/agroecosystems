@@ -53,6 +53,26 @@ treatment_standardization <- function(trt, std_table, mass_value) {
   return(std_value)
 }
 
+LER_calculation <- function(LER_data, location){
+  for (i in 1:nrow(spp_combos)){
+    mixed_1 <- LER_data %>%
+      filter(CropTrt == paste(spp_combos$sp_1[i], spp_combos$sp_2[i], sep="") &
+               CropSp == spp_combos$sp_1[i])
+    mono_1 <- data_for_LER %>%
+      filter(CropTrt == spp_combos$sp_1[i] & CropSp == spp_combos$sp_1[i])
+    mixed_2 <- LER_data %>%
+      filter(CropTrt == paste(spp_combos$sp_1[i], spp_combos$sp_2[i], sep="") &
+               CropSp == spp_combos$sp_2[i])
+    mono_2 <- LER_data %>%
+      filter(CropTrt == spp_combos$sp_2[i] & CropSp == spp_combos$sp_2[i])
+    LER <- round(mixed_1$site_avg_biomass / mono_1$site_avg_biomass + 
+                   mixed_2$site_avg_biomass / mono_2$site_avg_biomass, 3)
+    LER_record <- data.frame(location, c(spp_combos[i, ]), LER)
+    LER_calc <- bind_rows(LER_calc, LER_record)
+  }
+  return(LER_calc)
+}
+
 ## Import and Manage Data
 
 seeding_rate_table <- data.frame(CropTrt = c("SH", "SS", "VB",
@@ -201,6 +221,47 @@ for(s in species){
 }
 
 ## Land Equivalent Ratio
+
+data_for_LER <- biomass_data %>%
+  group_by(PlotID, CropSp, Location, CropTrt, Location_CropTrt) %>%
+  summarize(avg_LeavesStems_tha = mean(LeavesStems_tha),
+            avg_StemCount = mean(StemCounts)) %>%
+  group_by(Location, CropTrt, CropSp) %>%
+  summarize(site_avg_biomass = mean(avg_LeavesStems_tha),
+            site_sd_biomass = sd(avg_LeavesStems_tha))
+
+spp_combos <- data.frame(sp_1 = c("SH", "SH", "SS"), sp_2 = c("SS", "VB", "VB"))
+
+LER_output <- data.frame(location = c(), sp_1 = c(), sp_2 = c(), LER = c())
+for (l in unique(data_for_LER$Location)){
+  location_data <- data_for_LER %>%
+    filter(Location == l)
+  LER_location <- LER_calculation(location_data, l)
+  LER_output <- bind_rows(LER_output, LER_location)
+}
+
+write_csv(LER_output, "output/LER.csv")
+
+data_for_LER_row <- biomass_data %>%
+  group_by(PlotID, CropSp, Location, CropTrt, Location_CropTrt, Row) %>%
+  summarize(avg_LeavesStems_tha = mean(LeavesStems_tha),
+            avg_StemCount = mean(StemCounts)) %>%
+  group_by(Location, CropTrt, CropSp, Row) %>%
+  summarize(site_avg_biomass = mean(avg_LeavesStems_tha))
+
+LER_output_row <- data.frame(location = c(), row = c(), sp_1 = c(), sp_2 = c(), LER = c())
+for (l in unique(data_for_LER_row$Location)){
+  location_data <- data_for_LER_row %>%
+    filter(Location == l)
+  for(r in unique(location_data$Row)){
+    row_data <- location_data %>%
+      filter(Row == r)
+    LER_row <- c(l, LER_calculation(row_data, r))
+    LER_output <- bind_rows(LER_output, LER_row)
+  }
+}
+
+### NOT BROKEN
 data_for_LER <- total_biomass %>%
   select(Location, CropTrt, CropSp, avg_LeavesStems_tha) %>%
   group_by(Location, CropTrt, CropSp) %>%
@@ -224,10 +285,8 @@ for (l in unique(data_for_LER$Location)){
     mono_2 <- location_data %>%
       filter(CropTrt == spp_combos$sp_2[i] & CropSp == spp_combos$sp_2[i])
     LER <- round(mixed_1$site_avg_biomass / mono_1$site_avg_biomass + 
-      mixed_2$site_avg_biomass / mono_2$site_avg_biomass, 3)
+                   mixed_2$site_avg_biomass / mono_2$site_avg_biomass, 3)
     LER_row <- data.frame(l, c(spp_combos[i, ]), LER)
     LER_output <- bind_rows(LER_output, LER_row)
   }
 }
-
-write_csv(LER_output, "output/LER.csv")
