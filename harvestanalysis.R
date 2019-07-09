@@ -53,24 +53,25 @@ treatment_standardization <- function(trt, std_table, mass_value) {
   return(std_value)
 }
 
-LER_calculation <- function(LER_data, location){
+LER_calculation <- function(){
+  ### Requires globally defined LER_output, location_data, and spp_combos
   for (i in 1:nrow(spp_combos)){
-    mixed_1 <- LER_data %>%
+    mixed_1 <- location_data %>%
       filter(CropTrt == paste(spp_combos$sp_1[i], spp_combos$sp_2[i], sep="") &
                CropSp == spp_combos$sp_1[i])
-    mono_1 <- data_for_LER %>%
+    mono_1 <- location_data %>%
       filter(CropTrt == spp_combos$sp_1[i] & CropSp == spp_combos$sp_1[i])
-    mixed_2 <- LER_data %>%
+    mixed_2 <- location_data %>%
       filter(CropTrt == paste(spp_combos$sp_1[i], spp_combos$sp_2[i], sep="") &
                CropSp == spp_combos$sp_2[i])
-    mono_2 <- LER_data %>%
+    mono_2 <- location_data %>%
       filter(CropTrt == spp_combos$sp_2[i] & CropSp == spp_combos$sp_2[i])
     LER <- round(mixed_1$site_avg_biomass / mono_1$site_avg_biomass + 
                    mixed_2$site_avg_biomass / mono_2$site_avg_biomass, 3)
-    LER_record <- data.frame(location, c(spp_combos[i, ]), LER)
-    LER_calc <- bind_rows(LER_calc, LER_record)
+    LER_record <- data.frame(l, c(spp_combos[i, ]), LER)
+    LER_output <- bind_rows(LER_output, LER_record)
   }
-  return(LER_calc)
+  return(LER_output)
 }
 
 ## Import and Manage Data
@@ -209,13 +210,13 @@ for(s in species){
     mutate(CropTrt = factor(CropTrt, levels = str_subset(treatments, s))) %>% 
     group_by(Location, CropTrt) %>%
     summarize(avg_stem_mass = mean(avg_LeavesStems_tha/(0.01*avg_StemCount), na.rm=TRUE),
-              se_stem_mass = sd(avg_LeavesStems_tha/(0.01*avg_StemCount*sqrt(n())), na.rm=TRUE))
+              ci_stem_mass = 2*sd(avg_LeavesStems_tha/(0.01*avg_StemCount), na.rm=TRUE)/sqrt(n()))
 
   ggplot(data_for_figure, aes(x=factor(CropTrt), y=avg_stem_mass)) +
     geom_bar(stat="identity") +
-    geom_errorbar(aes(ymin = avg_stem_mass-se_stem_mass, ymax = avg_stem_mass+se_stem_mass), width=0.2) +
+    geom_errorbar(aes(ymin = avg_stem_mass-ci_stem_mass, ymax = avg_stem_mass+ci_stem_mass), width=0.2) +
     facet_grid(.~Location) +
-    labs(x="Crop Mix", y="Fresh Mass / Individual [g]", title = paste0(s)) +
+    labs(x="Crop Mix", y="Fresh Mass / Individual [g +/- 95% CI]", title = paste0(s)) +
     theme_bw(base_size = 24, base_family = "Helvetica")
   ggsave(paste0("output/Stem_mass_", s, ".png"))
 }
@@ -230,14 +231,18 @@ data_for_LER <- biomass_data %>%
   summarize(site_avg_biomass = mean(avg_LeavesStems_tha),
             site_sd_biomass = sd(avg_LeavesStems_tha))
 
-spp_combos <- data.frame(sp_1 = c("SH", "SH", "SS"), sp_2 = c("SS", "VB", "VB"))
+data_for_LER <- total_biomass %>%
+  select(Location, CropTrt, CropSp, avg_LeavesStems_tha) %>%
+  group_by(Location, CropTrt, CropSp) %>%
+  summarize(site_avg_biomass = mean(avg_LeavesStems_tha),
+            site_sd_biomass = sd(avg_LeavesStems_tha))
 
+spp_combos <- data.frame(sp_1 = c("SH", "SH", "SS"), sp_2 = c("SS", "VB", "VB"))
 LER_output <- data.frame(location = c(), sp_1 = c(), sp_2 = c(), LER = c())
 for (l in unique(data_for_LER$Location)){
   location_data <- data_for_LER %>%
     filter(Location == l)
-  LER_location <- LER_calculation(location_data, l)
-  LER_output <- bind_rows(LER_output, LER_location)
+  LER_output <- LER_calculation()
 }
 
 write_csv(LER_output, "output/LER.csv")
@@ -251,42 +256,41 @@ data_for_LER_row <- biomass_data %>%
 
 LER_output_row <- data.frame(location = c(), row = c(), sp_1 = c(), sp_2 = c(), LER = c())
 for (l in unique(data_for_LER_row$Location)){
-  location_data <- data_for_LER_row %>%
+  site_data <- data_for_LER_row %>%
     filter(Location == l)
-  for(r in unique(location_data$Row)){
-    row_data <- location_data %>%
+  for(r in 1:6){
+    location_data <- site_data %>%
       filter(Row == r)
-    LER_row <- c(l, LER_calculation(row_data, r))
-    LER_output <- bind_rows(LER_output, LER_row)
+    for (i in 1:nrow(spp_combos)){
+      mixed_1 <- location_data %>%
+        filter(CropTrt == paste(spp_combos$sp_1[i], spp_combos$sp_2[i], sep="") &
+                 CropSp == spp_combos$sp_1[i])
+      mono_1 <- location_data %>%
+        filter(CropTrt == spp_combos$sp_1[i] & CropSp == spp_combos$sp_1[i])
+      mixed_2 <- location_data %>%
+        filter(CropTrt == paste(spp_combos$sp_1[i], spp_combos$sp_2[i], sep="") &
+                 CropSp == spp_combos$sp_2[i])
+      mono_2 <- location_data %>%
+        filter(CropTrt == spp_combos$sp_2[i] & CropSp == spp_combos$sp_2[i])
+      LER <- round(mixed_1$site_avg_biomass / mono_1$site_avg_biomass + 
+                     mixed_2$site_avg_biomass / mono_2$site_avg_biomass, 3)
+      LER_record <- data.frame(l, r, c(spp_combos[i, ]), LER)
+      LER_output_row <- bind_rows(LER_output_row, LER_record)
+    }
   }
 }
 
-### NOT BROKEN
-data_for_LER <- total_biomass %>%
-  select(Location, CropTrt, CropSp, avg_LeavesStems_tha) %>%
-  group_by(Location, CropTrt, CropSp) %>%
-  summarize(site_avg_biomass = mean(avg_LeavesStems_tha),
-            site_sd_biomass = sd(avg_LeavesStems_tha))
+LER_row_summary <- LER_output_row %>% 
+  group_by(l, sp_1, sp_2) %>% 
+  summarize(mean_LER = mean(LER), ci_LER = 2*sd(LER)/sqrt(6)) %>% 
+  mutate(spp = paste0(sp_1, "-", sp_2))
 
-spp_combos <- data.frame(sp_1 = c("SH", "SH", "SS"), sp_2 = c("SS", "VB", "VB"))
-LER_output <- data.frame(location = c(), sp_1 = c(), sp_2 = c(), LER = c())
-for (l in unique(data_for_LER$Location)){
-  location_data <- data_for_LER %>%
-    filter(Location == l)
-  for (i in 1:nrow(spp_combos)){
-    mixed_1 <- location_data %>%
-      filter(CropTrt == paste(spp_combos$sp_1[i], spp_combos$sp_2[i], sep="") &
-               CropSp == spp_combos$sp_1[i])
-    mono_1 <- location_data %>%
-      filter(CropTrt == spp_combos$sp_1[i] & CropSp == spp_combos$sp_1[i])
-    mixed_2 <- location_data %>%
-      filter(CropTrt == paste(spp_combos$sp_1[i], spp_combos$sp_2[i], sep="") &
-               CropSp == spp_combos$sp_2[i])
-    mono_2 <- location_data %>%
-      filter(CropTrt == spp_combos$sp_2[i] & CropSp == spp_combos$sp_2[i])
-    LER <- round(mixed_1$site_avg_biomass / mono_1$site_avg_biomass + 
-                   mixed_2$site_avg_biomass / mono_2$site_avg_biomass, 3)
-    LER_row <- data.frame(l, c(spp_combos[i, ]), LER)
-    LER_output <- bind_rows(LER_output, LER_row)
-  }
-}
+ggplot(LER_row_summary, aes(x=spp, y=mean_LER)) +
+  geom_bar(stat="identity") +
+  geom_errorbar(aes(ymin=mean_LER-ci_LER, ymax=mean_LER+ci_LER), width=0.2) +
+  facet_grid(.~l) +
+  geom_hline(yintercept = 1, linetype="dashed") +
+  labs(x="Crop Mix", y="LER [+/- 95% CI]") +
+  theme_bw(base_size = 24, base_family = "Helvetica") +
+  theme(axis.text.x = element_text(size=14, angle=30))
+ggsave("output/LER.png")
