@@ -110,6 +110,29 @@ moisture_species <- moisture_content %>%
 species <- c("SH", "SS", "VB")
 treatments <- c("SH", "SS", "VB", "SHSS", "SHVB", "SSVB")
 
+## Species biomass per site
+
+monos <- total_biomass %>%
+  filter(CropTrt %in% species) 
+
+monos_summary <- monos %>%
+  group_by(CropSp, Location) %>%
+  summarize(Avg_LeavesStems_tha = mean(avg_LeavesStems_tha),
+            CI_LeavesStems_tha = 2*sd(avg_LeavesStems_tha)/sqrt(n()))
+
+test <- aov(avg_LeavesStems_tha ~  CropTrt + Location_CropTrt, data=monos)
+print(summary(test))
+print(HSD.test(test, "CropTrt")$groups)
+print(HSD.test(test, "Location_CropTrt")$groups)
+
+ggplot(monos_summary, aes(x=Location, y=Avg_LeavesStems_tha)) +
+  geom_bar(stat="identity") +
+  geom_errorbar(aes(ymin = Avg_LeavesStems_tha-CI_LeavesStems_tha, 
+                    ymax = Avg_LeavesStems_tha+CI_LeavesStems_tha), width=0.2) +
+  facet_grid(.~CropSp) +
+  labs(x="Site", y="Fresh Mass [tons/ha +/- 95% CI]") +
+  theme_bw(base_size = 24, base_family = "Helvetica")
+ggsave("output/mons.png")
 
 ## ANOVA for total biomass per treatment
 
@@ -220,6 +243,8 @@ for(s in species){
     theme_bw(base_size = 24, base_family = "Helvetica")
   ggsave(paste0("output/Stem_mass_", s, ".png"))
 }
+
+
 
 ## Land Equivalent Ratio
 
