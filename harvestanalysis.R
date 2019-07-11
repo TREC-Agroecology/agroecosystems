@@ -134,7 +134,7 @@ ggplot(monos_summary, aes(x=Location, y=Avg_LeavesStems_tha)) +
   geom_errorbar(aes(ymin = Avg_LeavesStems_tha-CI_LeavesStems_tha, 
                     ymax = Avg_LeavesStems_tha+CI_LeavesStems_tha), width=0.2) +
   facet_grid(.~CropSp) +
-  labs(x="Site", y="Fresh Mass [tons/ha +/- 95% CI]") +
+  labs(x="Site", y="Fresh Mass [ton/ha +/- 95% CI]") +
   theme_bw(base_size = 24, base_family = "Helvetica")
 ggsave("output/monos.png")
 
