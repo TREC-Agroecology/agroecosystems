@@ -19,32 +19,36 @@ matrix_plot <- function(data_for_matrix, title){
     }
   }
   
-  par(mfrow=c(2,2), mar=c(1,0,1,0))
+  par(mfrow=c(2,2), mar=c(1,0,1.5,0))
   plot(raster(biomass_std_matrix[1:6,]), axes=FALSE, box=FALSE, legend=FALSE,
        zlim=c(min(data_for_matrix$sum_biomass_std), max(data_for_matrix$sum_biomass_std)),
-       breaks= c(3, 2, 1, 0, -1, -2, -3), col= brewer.pal(7, "RdBu"))
+       breaks= c(3, 2, 1, 0, -1, -2, -3), col= brewer.pal(7, "RdBu"),
+       main = "VF", cex.main=2)
   text(x=rep(c(0.1, 0.3, 0.5, 0.65, 0.8, 1),6), 
        y=rep(c(1, 5/6, 4/6, 3/6, 2/6, 1/6),each=6),
-       label=data_for_matrix$CropTrt[1:36], adj=c(1,1))
+       label=data_for_matrix$CropTrt[1:36], adj=c(1,1), cex = 2)
   plot(raster(biomass_std_matrix[7:12,]), axes=FALSE, box=FALSE, legend=FALSE,
        zlim=c(min(data_for_matrix$sum_biomass_std), max(data_for_matrix$sum_biomass_std)),
-       breaks= c(3, 2, 1, 0, -1, -2, -3), col= brewer.pal(7, "RdBu"))
+       breaks= c(3, 2, 1, 0, -1, -2, -3), col= brewer.pal(7, "RdBu"),
+       main = "FO", cex.main=2)
   text(x=rep(c(0.1, 0.3, 0.5, 0.65, 0.8, 1),6), 
        y=rep(c(1, 5/6, 4/6, 3/6, 2/6, 1/6),each=6),
-       label=data_for_matrix$CropTrt[36:72], adj=c(1,1))
+       label=data_for_matrix$CropTrt[36:72], adj=c(1,1), cex = 2)
   plot(raster(biomass_std_matrix[13:18,]), axes=FALSE, box=FALSE, legend=FALSE, 
        zlim=c(min(data_for_matrix$sum_biomass_std), max(data_for_matrix$sum_biomass_std)),
-       breaks= c(3, 2, 1, 0, -1, -2, -3), col= brewer.pal(7, "RdBu"))
+       breaks= c(3, 2, 1, 0, -1, -2, -3), col= brewer.pal(7, "RdBu"),
+       main = "HH", cex.main=2)
   text(x=rep(c(0.1, 0.3, 0.5, 0.65, 0.8, 1),6), 
        y=rep(c(1, 5/6, 4/6, 3/6, 2/6, 1/6),each=6),
-       label=data_for_matrix$CropTrt[73:108], adj=c(1,1))
+       label=data_for_matrix$CropTrt[73:108], adj=c(1,1), cex=2)
   plot(raster(biomass_std_matrix[19:24,]), axes=FALSE,  box=FALSE,
        zlim=c(min(data_for_matrix$sum_biomass_std), max(data_for_matrix$sum_biomass_std)),
        breaks= c(3, 2, 1, 0, -1, -2, -3), col= brewer.pal(7, "RdBu"),
-       legend.width=4,  legend.args=list(text=title, side=2, cex=2))
+       legend.width=4,  legend.args=list(text=title, side=2, cex=2),
+       main = "OC", cex.main=2, axis.args=list(cex.axis=2))
   text(x=rep(c(0.1, 0.3, 0.5, 0.65, 0.8, 1),6), 
        y=rep(c(1, 5/6, 4/6, 3/6, 2/6, 1/6),each=6),
-       label=data_for_matrix$CropTrt[109:144], adj=c(1,1))
+       label=data_for_matrix$CropTrt[109:144], adj=c(1,1), cex = 2)
 }
 
 treatment_standardization <- function(trt, std_table, mass_value) {
@@ -132,7 +136,7 @@ ggplot(monos_summary, aes(x=Location, y=Avg_LeavesStems_tha)) +
   facet_grid(.~CropSp) +
   labs(x="Site", y="Fresh Mass [tons/ha +/- 95% CI]") +
   theme_bw(base_size = 24, base_family = "Helvetica")
-ggsave("output/mons.png")
+ggsave("output/monos.png")
 
 ## ANOVA for total biomass per treatment
 
@@ -306,6 +310,7 @@ for (l in unique(data_for_LER_row$Location)){
 }
 
 LER_row_summary <- LER_output_row %>% 
+  mutate(l = factor(l, levels = c("VF", "FO", "OC", "HH"))) %>% 
   group_by(l, sp_1, sp_2) %>% 
   summarize(mean_LER = mean(LER), ci_LER = 2*sd(LER)/sqrt(6)) %>% 
   mutate(spp = paste0(sp_1, "-", sp_2))
