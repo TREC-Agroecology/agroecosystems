@@ -1,5 +1,5 @@
 ### This script analyses  winter 2019 cover crop biomass.
-### Remainder: Set working directory to source file location.
+### Reminder: Set working directory to source file location.
 
 library(tidyverse)
 library(agricolae)
