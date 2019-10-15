@@ -1,5 +1,5 @@
-### Thioro and Zack are starting the file to analyse the cover crop data.
-### This script requires set working directory to source file location.
+### This script analyses  winter 2019 cover crop biomass.
+### Reminder: Set working directory to source file location.
 
 library(tidyverse)
 library(agricolae)
@@ -239,12 +239,13 @@ for(s in species){
     summarize(avg_stem_mass = mean(avg_LeavesStems_tha/(0.01*avg_StemCount), na.rm=TRUE),
               ci_stem_mass = 2*sd(avg_LeavesStems_tha/(0.01*avg_StemCount), na.rm=TRUE)/sqrt(n()))
 
-  ggplot(data_for_figure, aes(x=factor(CropTrt), y=avg_stem_mass)) +
-    geom_bar(stat="identity") +
+  ggplot(data_for_figure, aes(x=CropTrt, y=avg_stem_mass)) +
+    geom_bar(aes(fill=CropTrt), stat="identity") +
     geom_errorbar(aes(ymin = avg_stem_mass-ci_stem_mass, ymax = avg_stem_mass+ci_stem_mass), width=0.2) +
     facet_grid(.~Location) +
     labs(x="Crop Mix", y="Fresh Mass / Individual [g +/- 95% CI]", title = paste0(s)) +
-    theme_bw(base_size = 24, base_family = "Helvetica")
+    theme_bw(base_size = 20, base_family = "Helvetica") +
+    theme(legend.position = "none")
   ggsave(paste0("output/Stem_mass_", s, ".png"))
 }
 
