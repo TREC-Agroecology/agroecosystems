@@ -137,7 +137,8 @@ ggplot(monos_summary, aes(x=Location, y=Avg_LeavesStems_tha)) +
                     ymax = Avg_LeavesStems_tha+CI_LeavesStems_tha), width=0.2) +
   facet_grid(.~CropSp) +
   labs(x="Site", y="Fresh Mass [ton/ha +/- 95% CI]") +
-  theme_bw(base_size = 24, base_family = "Helvetica")
+  theme_bw(base_size = 24, base_family = "Helvetica") +
+  theme(legend.position = "none")
 ggsave("output/monos.png")
 
 ## ANOVA for total biomass per treatment
@@ -329,5 +330,6 @@ ggplot(LER_row_summary, aes(x=spp, y=mean_LER)) +
   scale_fill_manual(values=c("#AF601A", "#8E44AD", "#196F3D")) +
   labs(x="Crop Mix", y="LER [+/- 95% CI]") +
   theme_bw(base_size = 24, base_family = "Helvetica") +
-  theme(axis.text.x = element_text(size=14, angle=30))
+  theme(axis.text.x = element_text(size=14, angle=30),
+        legend.position = "none")
 ggsave("output/LER.png")
