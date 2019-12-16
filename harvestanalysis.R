@@ -112,7 +112,9 @@ moisture_species <- moisture_content %>%
   summarize(avg_MC = mean(AGB_MC))
 
 species <- c("SH", "SS", "VB")
-treatments <- c("SH", "SS", "VB", "SHSS", "SHVB", "SSVB")
+treatments <- data.frame(treatments = c("SH", "SS", "VB", "SHSS", "SHVB", "SSVB"),
+                         color_set = c("#A93226", "#D4AC0D", "#85C1E9", "#AF601A", "#8E44AD", "#196F3D"))
+
 
 ## Species biomass per site
 
@@ -130,12 +132,13 @@ print(HSD.test(test, "CropTrt")$groups)
 print(HSD.test(test, "Location_CropTrt")$groups)
 
 ggplot(monos_summary, aes(x=Location, y=Avg_LeavesStems_tha)) +
-  geom_bar(stat="identity") +
+  geom_bar(stat="identity", aes(fill=Location)) +
   geom_errorbar(aes(ymin = Avg_LeavesStems_tha-CI_LeavesStems_tha, 
                     ymax = Avg_LeavesStems_tha+CI_LeavesStems_tha), width=0.2) +
   facet_grid(.~CropSp) +
   labs(x="Site", y="Fresh Mass [ton/ha +/- 95% CI]") +
-  theme_bw(base_size = 24, base_family = "Helvetica")
+  theme_bw(base_size = 24, base_family = "Helvetica") +
+  theme(legend.position = "none")
 ggsave("output/monos.png")
 
 ## ANOVA for total biomass per treatment
@@ -234,18 +237,21 @@ for(s in species){
   data_for_figure <- total_biomass %>% 
     ungroup() %>%
     filter(CropSp == s) %>%
-    mutate(CropTrt = factor(CropTrt, levels = str_subset(treatments, s))) %>% 
+    mutate(CropTrt = factor(CropTrt, levels = str_subset(treatments$treatments, s))) %>%
     group_by(Location, CropTrt) %>%
     summarize(avg_stem_mass = mean(avg_LeavesStems_tha/(0.01*avg_StemCount), na.rm=TRUE),
-              ci_stem_mass = 2*sd(avg_LeavesStems_tha/(0.01*avg_StemCount), na.rm=TRUE)/sqrt(n()))
+              ci_stem_mass = 2*sd(avg_LeavesStems_tha/(0.01*avg_StemCount), na.rm=TRUE)/sqrt(n())) %>% 
+    left_join(treatments, by = c("CropTrt" = "treatments")) %>% 
+    mutate(CropTrt = factor(CropTrt, levels = str_subset(treatments$treatments, s)))
 
   ggplot(data_for_figure, aes(x=CropTrt, y=avg_stem_mass)) +
-    geom_bar(aes(fill=CropTrt), stat="identity") +
+    geom_bar(stat="identity", aes(fill=CropTrt)) +
     geom_errorbar(aes(ymin = avg_stem_mass-ci_stem_mass, ymax = avg_stem_mass+ci_stem_mass), width=0.2) +
     facet_grid(.~Location) +
     labs(x="Crop Mix", y="Fresh Mass / Individual [g +/- 95% CI]", title = paste0(s)) +
+    scale_fill_manual(values=as.character(unique(data_for_figure$color_set))) +
     theme_bw(base_size = 20, base_family = "Helvetica") +
-    theme(legend.position = "none")
+    theme(legend.position="none")
   ggsave(paste0("output/Stem_mass_", s, ".png"))
 }
 
@@ -317,11 +323,13 @@ LER_row_summary <- LER_output_row %>%
   mutate(spp = paste0(sp_1, "-", sp_2))
 
 ggplot(LER_row_summary, aes(x=spp, y=mean_LER)) +
-  geom_bar(stat="identity") +
+  geom_bar(stat="identity", aes(fill=spp)) +
   geom_errorbar(aes(ymin=mean_LER-ci_LER, ymax=mean_LER+ci_LER), width=0.2) +
   facet_grid(.~l) +
   geom_hline(yintercept = 1, linetype="dashed") +
+  scale_fill_manual(values=c("#AF601A", "#8E44AD", "#196F3D")) +
   labs(x="Crop Mix", y="LER [+/- 95% CI]") +
   theme_bw(base_size = 24, base_family = "Helvetica") +
-  theme(axis.text.x = element_text(size=14, angle=30))
+  theme(axis.text.x = element_text(size=14, angle=30),
+        legend.position = "none")
 ggsave("output/LER.png")
