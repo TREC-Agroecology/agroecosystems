@@ -1,4 +1,4 @@
-Plot ID,Block,PlotName,SiteName,CropTrt,SiteNum,RowNumber,SamplingDate,Year,Month,Day,LS.FreshWeight_g,LS.DryWeight_g,R.FreshWeight_g,R.DryWeight_g
+PlotID,Block,PlotName,SiteName,CropTrt,SiteNum,RowNum,SamplingDate,Year,Month,Day,Leaf_Stem_FreshWeight_g,Leaf_Stem_DryWeight_g,Root_FreshWeight_g,Root_DryWeight_g
 1,1,VF_SHSS-1,VF,SS,1,1,7/18/2019,2019,7,18,306,86,203,114
 4,1,VF_SHVB-1,VF,SH,1,1,7/18/2019,2019,7,18,293,86,298,143
 5,1,VF_SSVB-1,VF,VB,1,1,7/18/2019,2019,7,18,293,85,171,54

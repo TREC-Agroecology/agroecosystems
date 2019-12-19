@@ -1,4 +1,4 @@
-PlotID,Location,PlotName,CropName,CropTrt,SiteNum,RowNumber,ColNum,Position,SamplingWeek,SampleDate,Year,Month,Day,Leaves+Stems_FreshWeight_g,Leaves+Stems_FreshWeight_g,Leaves+Stems_FreshWeight_g,Roots_FreshWeight_g,Roots_FreshWeight_g,Roots_FreshWeight_g,Weeds_FreshWeight_g,Weeds_FreshWeight_g,Weeds_FreshWeight_g
+PlotID,Location,PlotName,CropName,CropTrt,SiteNum,RowNum,ColNum,Position,SamplingWeek,SampleDate,Year,Month,Day,Leaves+Stems_FreshWeight_g,Leaves+Stems_FreshWeight_g,Leaves+Stems_FreshWeight_g,Roots_FreshWeight_g,Roots_FreshWeight_g,Roots_FreshWeight_g,Weeds_FreshWeight_g,Weeds_FreshWeight_g,Weeds_FreshWeight_g
 1,VF,VF_SHSS-1,SH,SHSS,1,1,1,111,9,7/18/2019,2019,7,18,1511,965,1068,495.1,163,125.6,155,171,222
 1,VF,VF_SHSS-1,SS,SHSS,1,1,1,111,9,7/18/2020,2019,7,18,15,76,189,5,3,258.2,Blank,Blank,Blank
 2,VF,VF_VB-1,VB,VB,1,1,2,112,9,7/18/2021,2019,7,18,404,445,258,17,33.2,14,357,338,310

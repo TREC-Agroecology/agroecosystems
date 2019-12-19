@@ -1,4 +1,4 @@
-PlotID,Block,SiteName,PlotName,Location,CropName,CropTrt,SiteNum,RowNumber,ColNum,Position,SamplingDate,SamplingWeek,Year,Month,Day ,StandCount_Q1,StandCount_Q2,StandCount_Q3,StandCount_Avg
+PlotID,Block,SiteName,PlotName,Location,CropName,CropTrt,SiteNum,RowNum,ColNum,Position,SamplingDate,SamplingWeek,Year,Month,Day ,StandCount_Q1,StandCount_Q2,StandCount_Q3,StandCount_Avg
 1,1,VF,VF_SHSS-1,VF,SH,SHSS,1,1,1,111,7/18/2019,9,2019,7,18,40,30,21,30
 1,1,VF,VF_SHSS-1,VF,SS,SHSS,1,1,1,111,7/18/2019,9,2019,7,18,3,4,7,5
 2,1,VF,VF_VB-1,VF,VB,VB,1,1,2,112,7/18/2019,9,2019,7,18,4,6,3,4
