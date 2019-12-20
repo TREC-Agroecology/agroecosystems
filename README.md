@@ -56,6 +56,7 @@
 `biomass_soil_[season]_[crop].csv` (`biomass_soil_winter_SH.csv`)
 - `Location`: experimental plot location at TREC [*linking field*]
 - `CropTrt`: experimental treatment denoting cover crops in monoculture or mixture [*linking field*]
+- 'CropName': abbreviated name of individual cover crops e.g. SH for sunn hemp
 - `LeavesStems_tha`: an estimate of aboveground biomass for each crop within a treatment at harvest [*reported as a sample average (`avg_`) and standard deviation (`sd_`)*]
 - `SOM_percent`: soil organic matter as a percent of soil sample before planting
 - `TP_mgkg: soil total phosphorous concentration in mg/Kg before planting [*summer only*]
@@ -76,4 +77,7 @@
 - `CropTrt`: experimental treatment denoting cover crops in monoculture or mixture [*linking field*]
 - `Height_mm`: canopy height of each crop at a `Sampling Week` [*reported as a sample average (`avg_`) and standard deviation (`sd_`)*]
 - `Chlorophyll_CI`: chlorophyll index of greeness as measured by an Appogee MC-100
-
+- 'Diameter_mm': individual crop diameter at point where stem meets soil measured with a caliper
+- 'Temp_F': temperature in Farenheit at time of CHL measurment (with AtLeaf handheld meter)
+- 'TotCH_ugcm2': chlorphyll index of greeness as measured by AtLeaf handheld meter
+- 'SPAD': chlorphyll SPAD reading as measured by AtLeaf handheld meter
