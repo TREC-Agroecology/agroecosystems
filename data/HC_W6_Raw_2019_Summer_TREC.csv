@@ -1,4 +1,4 @@
-PlotID,Block,PlotName,Location,CropName,CropTrt,SiteNum,RowNum,ColNum,Position,SampleWeek,SampleDate,Year,Month,Day,Hght_w6_cm,Hght_w6_cm,Hght_w6_cm,Chloro_w6_CCI,Chloro_w6_CCI,Chloro_w6_CCI
+PlotID,Block,PlotName,Location,CropName,CropTrt,SiteNum,RowNum,ColNum,Position,SampleWeek,SampleDate,Year,Month,Day,Hght_w6_mm,Hght_w6_mm,Hght_w6_mm,Chloro_w6_CCI,Chloro_w6_CCI,Chloro_w6_CCI
 1,1,VF_SHSS-1,VF,SH,SHSS,1,1,1,111,6,6/24/2019,2019,6,24,97,91,100,8,10.7,13.9
 1,1,VF_SHSS-1,VF,SS,SHSS,1,1,1,111,6,6/24/2019,2019,6,24,1.3,1.2,105,6.1,5.7,4.9
 2,1,VF_VB-1,VF,VB,VB,1,1,2,112,6,6/24/2019,2019,6,24,110+,110+,103+,20.3,13.2,18.5
