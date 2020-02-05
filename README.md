@@ -56,22 +56,17 @@
 ### Data Products
 
 `biomass_soil_[season]_[crop].csv` (`biomass_soil_winter_SH.csv`)
-`height_[season]_[crop].csv` (`height_winter_SH.csv`)
+
 - 'Season': time period of plantings (i.e. Summer or Winter)
 - `Location`: experimental plot location at TREC [*linking field*]
 - `CropTrt`: experimental treatment denoting cover crops in monoculture or mixture [*linking field*]
-- 'CropName': experimental treatment of specific crop species in unit
-- `SamplingWeek`: week of sampling after planting date
-- 'EmergDay50_percent': day of fifty percent emergnce for a species in a unit
-- `Height_cm`: canopy height of each crop at a `SamplingWeek` [*reported as a sample average (`avg_`) and standard deviation (`sd_`)*]
-- `Chlorophyll_CCI`: chlorophyll index of greeness as measured by an Appogee MC-100 
-- 'pH': pH reading of soils as measured by an Oakton pH6+
+- `CropName`: abbreviated name of individual cover crops e.g. SH for sunn hemp
 - `LeavesStems_tha`: an estimate of aboveground biomass for each crop within a treatment at harvest [*reported as a sample average (`avg_`) and standard deviation (`sd_`)*]
+- `SOM_percent`: soil organic matter as a percent of soil sample before planting
 - 'Roots_tha': an estimate of belowground biomass for each crop within a treatment at harvest
 - 'Weeds_tha': an estimate of weeds biomass for each crop within a treatment at harvest
-- `SOM_percent`: soil organic matter as a percent of soil sample before planting
 - `TP_mgkg: soil total phosphorous concentration in mg/Kg before planting [*summer only*]
-- `GravelDryWgt_g`: gravel dry weight of bulk density sample in grams
+- `GravelDryWgt_g`: gravel dry weight in bulk density sample in grams
 - `GravelVol_mL`: gravel volume from bulk density sample in milliliters
 - `SoilDryWgt_g`: soil dry weight from bulk density sample in grams
 - `SoilVol_cm3`: soil volume from bulk density sample in cubic centimeters (i.e. mL)
@@ -86,8 +81,15 @@
 - `NH4_mgKg`: ammonium concentration from soil sample in milligrams / kilogram
 - `NO3_mgKg`: nitrate concentration from soil sample in milligrams / kilogram
 
-
-
-
-
-
+`height_[season]_[crop].csv` (`height_winter_SH.csv`)
+- `SamplingWeek`: week of sampling after planting date
+- 'EmergDay50_percent': day of fifty percent emergnce for a species in a unit
+- `Location`: experimental plot location at TREC [*linking field*]
+- `CropTrt`: experimental treatment denoting cover crops in monoculture or mixture [*linking field*]
+- `Height_mm`: canopy height of each crop at a `Sampling Week` [*reported as a sample average (`avg_`) and standard deviation (`sd_`)*]
+- `Chlorophyll_CCI`: chlorophyll index of greeness as measured by an Appogee MC-100 
+- 'pH': pH reading of soils as measured by an Oakton pH6+
+- `Diameter_mm`: individual crop diameter at point where stem meets soil measured with a caliper
+- `Temp_F`: temperature in Farenheit at time of CHL measurment (with AtLeaf handheld meter)
+- `TotCH_ugcm2`: chlorphyll index of greeness as measured by AtLeaf handheld meter
+- `SPAD`: chlorphyll SPAD reading as measured by AtLeaf handheld meter
