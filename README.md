@@ -87,17 +87,11 @@
 - `Location`: experimental plot location at TREC [*linking field*]
 - `CropTrt`: experimental treatment denoting cover crops in monoculture or mixture [*linking field*]
 - `Height_mm`: canopy height of each crop at a `Sampling Week` [*reported as a sample average (`avg_`) and standard deviation (`sd_`)*]
-<<<<<<< HEAD
-- `Chlorophyll_CCI`: chlorophyll index of greeness as measured by an Appogee MC-100 
+- `Diameter_mm`: individual crop diameter at point where stem meets soil measured with a caliper
 - 'pH': pH reading of soils as measured by an Oakton pH6+
-- `Diameter_mm`: individual crop diameter at point where stem meets soil measured with a caliper
-- `Temp_F`: temperature in Farenheit at time of CHL measurment (with AtLeaf handheld meter)
+- `Chlorophyll_CCI`: chlorophyll index of greeness as measured by an Appogee MC-100
 - `TotCH_ugcm2`: chlorphyll index of greeness as measured by AtLeaf handheld meter
-- `SPAD`: chlorphyll SPAD reading as measured by AtLeaf handheld meter
-=======
-- `Chlorophyll_CI`: chlorophyll index of greeness as measured by an Appogee MC-100
-- `Diameter_mm`: individual crop diameter at point where stem meets soil measured with a caliper
-- `Temp_F`: temperature in Farenheit at time of CHL measurment (with AtLeaf handheld meter)
-- `TotCH_ugcm2`: chlorphyll index of greeness as measured by AtLeaf handheld meter
-- `SPAD`: chlorphyll SPAD reading as measured by AtLeaf handheld meter
->>>>>>> 86912a788a93a828d4ffec6aa14eac4718517cf0
+- `SPAD`: chlorphyll SPAD reading as measured by AtLeaf handheld meter 
+- `Temp_F`: temperature in Farenheit at time of CHL measurment (with AtLeaf handheld meter). 
+
+
