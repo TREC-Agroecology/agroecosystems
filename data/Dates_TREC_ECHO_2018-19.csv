@@ -1,7 +1,0 @@
-Station ,Planting_Date,planting_year,planting_month,planting_day,Harvest_Date,harvest_year,harvest_month,harvest_day,Period_Name
-ECHO,2018-05-03,2018,5,3,2018-08-06,2018,8,6,Summer_2018
-ECHO,2018-11-20,2018,11,20,2019-01-22,2019,1,22,Winter_2018
-ECHO,2019-05-14,2019,5,14,,,,,Summer_2019
-TREC,2018-05-10,2018,5,10,2018-08-15,2018,8,15,Summer_2018
-TREC,2018-11-01,2018,11,1,2019-01-11,2019,1,11,Winter_2018
-TREC,2018-05-13,2018,5,13,2019-07-11,2019,7,11,Summer_2019
