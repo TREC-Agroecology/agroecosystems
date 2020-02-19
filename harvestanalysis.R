@@ -333,3 +333,55 @@ ggplot(LER_row_summary, aes(x=spp, y=mean_LER)) +
   theme(axis.text.x = element_text(size=14, angle=30),
         legend.position = "none")
 ggsave("output/LER.png")
+
+##Calculating LER by Column
+data_for_LER_column <- biomass_data %>%
+  group_by(PlotID, CropSp, CropTrt, ColNum, Location) %>%
+  summarize(avg_LeavesStems_tha = mean(LeavesStems_tha),
+            avg_StemCount = mean(StemCounts)) %>%
+  group_by(CropTrt, CropSp, ColNum, Location) %>%
+  summarize(site_avg_biomass = mean(avg_LeavesStems_tha))
+
+LER_output_column <- data.frame(Location = c(), col = c(), sp_1 = c(), sp_2 = c(), LER = c())
+for (l in unique(data_for_LER_column$Location)){
+  site_data <- data_for_LER_column %>%
+    filter(Location == l)
+  for(z in 1:6){
+    Location_data <- site_data %>%
+      filter(ColNum == z)
+    for (i in 1:nrow(spp_combos)){
+      mixed_1 <- Location_data %>%
+        filter(CropTrt == paste(spp_combos$sp_1[i], spp_combos$sp_2[i], sep="") &
+                 CropSp == spp_combos$sp_1[i])
+      mono_1 <- Location_data %>%
+        filter(CropTrt == spp_combos$sp_1[i] & CropSp == spp_combos$sp_1[i])
+      mixed_2 <- Location_data %>%
+        filter(CropTrt == paste(spp_combos$sp_1[i], spp_combos$sp_2[i], sep="") &
+                 CropSp == spp_combos$sp_2[i])
+      mono_2 <- Location_data %>%
+        filter(CropTrt == spp_combos$sp_2[i] & CropSp == spp_combos$sp_2[i])
+      LER <- round(mixed_1$site_avg_biomass / mono_1$site_avg_biomass + 
+                     mixed_2$site_avg_biomass / mono_2$site_avg_biomass, 3)
+      LER_record <- data.frame(l, z, c(spp_combos[i, ]), LER)
+      LER_output_column <- bind_rows(LER_output_column, LER_record)
+    }
+  }
+}
+
+LER_column_summary <- LER_output_column %>% 
+  mutate(l = factor(l, levels = c("AG"))) %>% 
+  group_by(l, sp_1, sp_2) %>% 
+  summarize(mean_LER = mean(LER), ci_LER = 2*sd(LER)/sqrt(6)) %>% 
+  mutate(spp = paste0(sp_1, "-", sp_2))
+
+ggplot(LER_column_summary, aes(x=spp, y=mean_LER)) +
+  geom_bar(stat="identity", aes(fill=spp)) +
+  geom_errorbar(aes(ymin=mean_LER-ci_LER, ymax=mean_LER+ci_LER), width=0.2) +
+  facet_grid(.~l) +
+  geom_hline(yintercept = 1, linetype="dashed") +
+  scale_fill_manual(values=c("#AF601A", "#8E44AD", "#196F3D")) +
+  labs(x="Crop Mix", y="LER [+/- 95% CI]") +
+  theme_bw(base_size = 24, base_family = "Helvetica") +
+  theme(axis.text.x = element_text(size=14, angle=30),
+        legend.position = "none")
+ggsave("output/LER.png")
