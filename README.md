@@ -13,7 +13,7 @@
 - `summer`: May 13, 2019 - July 11, 2019
 - `winter`: Nov 6, 2019 - Jan 6, 2020
 
-- 'summer': May , 2020 - July , 2020
+- `summer`: May , 2020 - July , 2020
 
 ### Experimental Design
 
@@ -57,25 +57,25 @@
 
 `biomass_soil_[season]_[crop].csv` (`biomass_soil_winter_SH.csv`)
 
-- 'Season': time period of plantings (i.e. Summer or Winter)
+- `Season`: time period of plantings (i.e. Summer or Winter)
 - `Location`: experimental plot location at TREC [*linking field*]
 - `CropTrt`: experimental treatment denoting cover crops in monoculture or mixture [*linking field*]
 - `CropName`: abbreviated name of individual cover crops e.g. SH for sunn hemp
 - `LeavesStems_tha`: an estimate of aboveground biomass for each crop within a treatment at harvest [*reported as a sample average (`avg_`) and standard deviation (`sd_`)*]
 - `SOM_percent`: soil organic matter as a percent of soil sample before planting
-- 'Roots_tha': an estimate of belowground biomass for each crop within a treatment at harvest
-- 'Weeds_tha': an estimate of weeds biomass for each crop within a treatment at harvest
-- `TP_mgkg: soil total phosphorous concentration in mg/Kg before planting [*summer only*]
+- `Roots_tha`: an estimate of belowground biomass for each crop within a treatment at harvest
+- `Weeds_tha`: an estimate of weeds biomass for each crop within a treatment at harvest
+- `TP_mgkg`: soil total phosphorous concentration in mg/Kg before planting [*summer only*]
 - `GravelDryWgt_g`: gravel dry weight in bulk density sample in grams
 - `GravelVol_mL`: gravel volume from bulk density sample in milliliters
 - `SoilDryWgt_g`: soil dry weight from bulk density sample in grams
 - `SoilVol_cm3`: soil volume from bulk density sample in cubic centimeters (i.e. mL)
 - `SoilBD_gcm3`: soil bulk density in grams / cubic centimeters
 - `SoilPorosity_percent`: soil porosity from bulk density as a percent of sample volume
-- 'PreIgnitionWgt_g': beaker and soil sample weight before muffle furnace 
-- 'PostIgnitionWgt_g': beaker and soil sample weight after muffle furnace
-- 'AshWgt_g': weight of ash minus beaker after muffle furnace 
-- 'LOIorSOM_percent': percentage of soil organic matter by LOI method 
+- `PreIgnitionWgt_g`: beaker and soil sample weight before muffle furnace 
+- `PostIgnitionWgt_g`: beaker and soil sample weight after muffle furnace
+- `AshWgt_g`: weight of ash minus beaker after muffle furnace 
+- `LOIorSOM_percent`: percentage of soil organic matter by LOI method 
 - `NH4_mgL`: ammonium concentration from soil sample in milligrams / Liter
 - `NO3_mgL`: nitrate concentration from soil sample in milligrams / Liter
 - `NH4_mgKg`: ammonium concentration from soil sample in milligrams / kilogram
@@ -83,12 +83,12 @@
 
 `height_[season]_[crop].csv` (`height_winter_SH.csv`)
 - `SamplingWeek`: week of sampling after planting date
-- 'EmergDay50_percent': day of fifty percent emergnce for a species in a unit
+- `EmergDay50_percent`: day of fifty percent emergnce for a species in a unit
 - `Location`: experimental plot location at TREC [*linking field*]
 - `CropTrt`: experimental treatment denoting cover crops in monoculture or mixture [*linking field*]
 - `Height_mm`: canopy height of each crop at a `Sampling Week` [*reported as a sample average (`avg_`) and standard deviation (`sd_`)*]
 - `Diameter_mm`: individual crop diameter at point where stem meets soil measured with a caliper
-- 'pH': pH reading of soils as measured by an Oakton pH6+
+- `pH`: pH reading of soils as measured by an Oakton pH6+
 - `Chlorophyll_CCI`: chlorophyll index of greeness as measured by an Appogee MC-100
 - `TotCH_ugcm2`: chlorphyll index of greeness as measured by AtLeaf handheld meter
 - `SPAD`: chlorphyll SPAD reading as measured by AtLeaf handheld meter 
