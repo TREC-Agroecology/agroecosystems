@@ -13,7 +13,7 @@
 - `summer`: May 13, 2019 - July 11, 2019
 - `winter`: Nov 6, 2019 - Jan 6, 2020
 
-- `summer`: May , 2020 - July , 2020
+- `summer`: May 5, 2020 - July 1, 2020
 
 ### Experimental Design
 
@@ -51,7 +51,13 @@
    - `VF` `1:36`
    - `FO` `37:72`
    - `HH` `73:108`
-   - `OC` `109:144`  
+   - `OC` `109:144` 
+
+### Land Preparation 
+
+- All site are moldboard plowed before each planting cycle.
+
+- `HH` and `OC` were rockplowed March 2018. 
 
 ### Data Products
 
@@ -82,6 +88,7 @@
 - `NO3_mgKg`: nitrate concentration from soil sample in milligrams / kilogram
 
 `height_[season]_[crop].csv` (`height_winter_SH.csv`)
+
 - `SamplingWeek`: week of sampling after planting date
 - `EmergDay50_percent`: day of fifty percent emergnce for a species in a unit
 - `Location`: experimental plot location at TREC [*linking field*]
