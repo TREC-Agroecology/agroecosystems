@@ -138,8 +138,8 @@ ggplot(LER_row_summary, aes(x=spp, y=mean_LER)) +
         legend.position = "none")
 ggsave("output/LER.png")
 
-#visualizing CI for LER Factors **need to reorganize table to fract all in one column
-LER_output_row_fract <- data.frame(season = c(), row = c(), sp = c(), croptrt = c(), LER_fract = c())
+#visualizing CI for LER Factors
+LER_output_row_fract <- data.frame(season = c(), row = c(), CropSp = c(), croptrt = c(), LER_fract = c())
 for (j in unique(data_for_LER$season)){
   season_data <- data_for_LER_row %>%
     filter(season == j)
@@ -147,7 +147,7 @@ for (j in unique(data_for_LER$season)){
     season_data %>%
       filter(RowNum == r)
     for (i in 1:nrow(spp_combos)){
-      mixed_1 <- season_data %>%
+    mixed_1 <- season_data %>%
         filter(CropTrt == paste(spp_combos$sp_1[i], spp_combos$sp_2[i], sep="") &
                  CropSp == spp_combos$sp_1[i])
       mono_1 <- season_data %>%
@@ -157,24 +157,25 @@ for (j in unique(data_for_LER$season)){
                  CropSp == spp_combos$sp_2[i])
       mono_2 <- season_data %>%
         filter(CropTrt == spp_combos$sp_2[i] & CropSp == spp_combos$sp_2[i])
-      LER_fract_sp1 <- mixed_1$site_avg_biomass / mono_1$site_avg_biomass
-      LER_fract_sp2 <- mixed_2$site_avg_biomass / mono_2$site_avg_biomass
-      LER_fract <-cbind(LER_fract_sp_1, LER_fract_sp2)
-      LER_record_fract <- data.frame(j, r, species, spp_combos[i, ], LER_fract)
-      LER_output_row_fract <- bind_rows(LER_output_row_fract, LER_record_fract)
+      LER_fract_sp<- mixed_1$site_avg_biomass / mono_1$site_avg_biomass
+      LER_record_fract_sp1 <- data.frame(j, r, spp_combos[i, ], LER_fract_sp) ###species 1 only
+      LER_fract_sp <- mixed_2$site_avg_biomass / mono_2$site_avg_biomass
+      LER_record_fract_sp2 <- data.frame(j, r, spp_combos[i, ], LER_fract_sp) ##species 2 only
+      LER_fract <-rbind(LER_record_fract_sp1, LER_record_fract_sp2)
+      LER_output_row_fract <- bind_rows(LER_output_row_fract, LER_fract)
     }
   }
-}
+  }
 LER_row_summary_fract <- LER_output_row_fract %>% 
   mutate(j = factor(j, levels = c("summer", "winter"))) %>% 
-  group_by(j, CropSp) %>% 
-  summarize(mean_LER = mean(LER_3), ci_LER = 2*sd(LER_3)/sqrt(6), mean_LERfract_sp1 = mean(LER_1), ci_LERfract_sp1 = 2*sd(LER_1)/sqrt(6), mean_LERfract_sp2 = mean(LER_2), ci_LERfract_sp2 = 2*sd(LER_2)/sqrt(6)) %>% 
-  mutate(spp = paste0(sp_1, "-", sp_2))
+  group_by(j, species, sp_1, sp_2) %>% 
+  summarize(mean_LER_fract = mean(LER_fract_sp), ci_LER_fract = 2*sd(LER_fract_sp)/sqrt(6))%>% 
+  mutate(CropTrt = paste0(sp_1, "-", sp_2))
 
-ggplot(LER_row_summary, aes(x=CropTrt, y=mean_LERfract, group = CropSp)) +
-  geom_bar(stat="identity", aes(fill=spp)) +
-  geom_errorbar(aes(ymin=mean_LERfract_sp1-ci_LERfract_sp1, ymax=mean_LERfract_sp1+ci_LERfract_sp1), width=0.2) +
-  facet_grid(CropSp~j) +
+ggplot(LER_row_summary_fract, aes(x=CropTrt, y=mean_LER_fract, group = species)) +
+  geom_bar(stat="identity", aes(fill=species)) +
+  geom_errorbar(aes(ymin=mean_LER_fract-ci_LER_fract, ymax=mean_LER_fract+ci_LER_fract), width=0.2) +
+  facet_grid(species~j) +
   geom_hline(yintercept = 0.5, linetype="dashed") +
   scale_fill_manual(values=c("#AF601A", "#8E44AD", "#196F3D")) +
   labs(x="Crop Mix", y="LERfraction [+/- 95% CI]") +
