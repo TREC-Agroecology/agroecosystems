@@ -1,21 +1,26 @@
-setwd("/Users/sreader/Documents/GitHub/agrocosystems")
+setwd("C:/Users/stacy/Documents/GitHub/agroecosystems")
 library(tidyverse)
 library(agricolae)
 library(RColorBrewer)
 library(dplyr)
 
+#This data not necessary - first season data was collected differently
 biomass_s2018<-read_csv("data/harvest-092018-ECHO.csv")
 biomass_s2018["season"] <- "summer"
 
 ##combining biomass data from 4 seasons (excluding summer 2018 which skews data)
 biomass_s2019<- read_csv("data/harvest-072019-ECHO.csv")
 biomass_s2019["season"] <- "summer"
+biomass_s2019["CpCycle"] <- "1"
 biomass_w2019<-read_csv("data/harvest-012020-ECHO.csv")
 biomass_w2019["season"]<- "winter"
+biomass_w2019["CpCycle"] <- "2"
 biomass_w2018<-read_csv("data/harvest-012019-ECHO.csv")
 biomass_w2018["season"]<-"winter"
+biomass_w2018["CpCycle"] <- "3"
 biomass_s2020<- read_csv("data/harvest-072020-ECHO.csv")
 biomass_s2020["season"]<-"summer"
+biomass_s2020["CpCycle"] <- "4"
 
 biomass_data <- merge(biomass_s2019, biomass_s2020, all=TRUE)
 biomass_data <- merge(biomass_data, biomass_w2018, all=TRUE)
@@ -33,7 +38,7 @@ biomass_data <- biomass_data %>%
   left_join(seeding_rate_table)
 
 total_biomass <- biomass_data %>%
-  group_by(PlotID, season, CropTrt, CropSp, seeding_rate) %>%
+  group_by(PlotID, season, CpCycle, CropTrt, CropSp, seeding_rate) %>%
   summarize(sum_LeavesStems_tha = sum(LeavesStems_tha),
             avg_LeavesStems_tha = mean(LeavesStems_tha),
             avg_StemCount = mean(StemCounts))
@@ -55,7 +60,7 @@ biomass_summary<- total_biomass %>%
 
 ##LER for CropTrt by season
 data_for_LER <- total_biomass %>%
-  select(CropTrt, CropSp, avg_LeavesStems_tha, season) %>%
+  select(CropTrt, CropSp, avg_LeavesStems_tha, season, CpCycle) %>%
   group_by(CropTrt, CropSp, season) %>%
   summarize(site_avg_biomass = mean(avg_LeavesStems_tha),
             sd_biomass = sd(avg_LeavesStems_tha))
@@ -87,12 +92,13 @@ write_csv(LER_output, "data/output/LER-ECHO.csv")
 
 ##Calculating LER by Row
 data_for_LER_row <- biomass_data %>%
-  group_by(PlotID, CropSp, CropTrt, RowNum, season) %>%
+  group_by(PlotID, CropSp, CropTrt, RowNum, season, CpCycle) %>%
   summarize(avg_LeavesStems_tha = mean(LeavesStems_tha),
             avg_StemCount = mean(StemCounts)) %>%
-  group_by(CropTrt, CropSp, RowNum, season) %>%
+  group_by(CropTrt, CropSp, RowNum, season, CpCycle) %>%
   summarize(site_avg_biomass = mean(avg_LeavesStems_tha))
 
+###LER visulization by season
 LER_output_row <- data.frame(season = c(), col = c(), sp_1 = c(), sp_2 = c(), LER_1 = c(), LER_2 = c(), LER_3 = c())
 for (j in unique(data_for_LER$season)){
   season_data <- data_for_LER_row %>%
@@ -123,7 +129,7 @@ for (j in unique(data_for_LER$season)){
 LER_row_summary <- LER_output_row %>% 
   mutate(j = factor(j, levels = c("summer", "winter"))) %>% 
   group_by(j, sp_1, sp_2) %>% 
-  summarize(mean_LER = mean(LER_3), ci_LER = 2*sd(LER_3)/sqrt(6), mean_LERfract_sp1 = mean(LER_1), ci_LERfract_sp1 = 2*sd(LER_1)/sqrt(6), mean_LERfract_sp2 = mean(LER_2), ci_LERfract_sp2 = 2*sd(LER_2)/sqrt(6)) %>% 
+  summarize(mean_LER = mean(LER_3), ci_LER = 2*sd(LER_3)/sqrt(6)) %>% 
   mutate(spp = paste0(sp_1, "-", sp_2))
 
 ggplot(LER_row_summary, aes(x=spp, y=mean_LER)) +
@@ -138,7 +144,52 @@ ggplot(LER_row_summary, aes(x=spp, y=mean_LER)) +
         legend.position = "none")
 ggsave("output/LER.png")
 
-#visualizing CI for LER Factors
+##LER Visulaization by CropCycle
+LER_output_row_2 <- data.frame(CpCycle = c(), col = c(), sp_1 = c(), sp_2 = c(), LER_1 = c(), LER_2 = c(), LER_3 = c())
+for (f in 1:4){
+  season_data <- data_for_LER_row %>%
+    filter(CpCycle == f)
+  for(r in 1:6){
+    season_data %>%
+      filter(RowNum == r)
+    for (i in 1:nrow(spp_combos)){
+      mixed_1 <- season_data %>%
+        filter(CropTrt == paste(spp_combos$sp_1[i], spp_combos$sp_2[i], sep="") &
+                 CropSp == spp_combos$sp_1[i])
+      mono_1 <- season_data %>%
+        filter(CropTrt == spp_combos$sp_1[i] & CropSp == spp_combos$sp_1[i])
+      mixed_2 <- season_data %>%
+        filter(CropTrt == paste(spp_combos$sp_1[i], spp_combos$sp_2[i], sep="") &
+                 CropSp == spp_combos$sp_2[i])
+      mono_2 <- season_data %>%
+        filter(CropTrt == spp_combos$sp_2[i] & CropSp == spp_combos$sp_2[i])
+      LER_1 <- mixed_1$site_avg_biomass / mono_1$site_avg_biomass
+      LER_2 <- mixed_2$site_avg_biomass / mono_2$site_avg_biomass
+      LER_3 <- round(mixed_1$site_avg_biomass / mono_1$site_avg_biomass + 
+                       mixed_2$site_avg_biomass / mono_2$site_avg_biomass, 3)
+      LER_record_2 <- data.frame(f, r, c(spp_combos[i, ]), LER_1, LER_2, LER_3)
+      LER_output_row_2 <- bind_rows(LER_output_row_2, LER_record_2)
+    }
+  }
+}
+LER_row_summary_2 <- LER_output_row_2 %>% 
+  group_by(f, sp_1, sp_2) %>% 
+  summarize(mean_LER = mean(LER_3), ci_LER = 2*sd(LER_3)/sqrt(6)) %>% 
+  mutate(spp = paste0(sp_1, "-", sp_2))
+
+ggplot(LER_row_summary_2, aes(x=spp, y=mean_LER)) +
+  geom_bar(stat="identity", aes(fill=spp)) +
+  geom_errorbar(aes(ymin=mean_LER-ci_LER, ymax=mean_LER+ci_LER), width=0.2) +
+  facet_grid(.~f) +
+  geom_hline(yintercept = 1, linetype="dashed") +
+  scale_fill_manual(values=c("#AF601A", "#8E44AD", "#196F3D")) +
+  labs(x="Crop Mix", y="LER [+/- 95% CI]") +
+  theme_bw(base_size = 24, base_family = "Helvetica") +
+  theme(axis.text.x = element_text(size=14, angle=30),
+        legend.position = "none")
+ggsave("output/LER.png")
+
+#visualizing LER Factors by season
 LER_output_row_fract <- data.frame(season = c(), row = c(), CropSp = c(), croptrt = c(), LER_fract = c())
 for (j in unique(data_for_LER$season)){
   season_data <- data_for_LER_row %>%
@@ -158,9 +209,11 @@ for (j in unique(data_for_LER$season)){
       mono_2 <- season_data %>%
         filter(CropTrt == spp_combos$sp_2[i] & CropSp == spp_combos$sp_2[i])
       LER_fract_sp<- mixed_1$site_avg_biomass / mono_1$site_avg_biomass
-      LER_record_fract_sp1 <- data.frame(j, r, spp_combos[i, ], LER_fract_sp) ###species 1 only
+      spp<-spp_combos$sp_1[i]
+      LER_record_fract_sp1 <- data.frame(j, r, spp, spp_combos[i, ], LER_fract_sp) ###species 1 only
       LER_fract_sp <- mixed_2$site_avg_biomass / mono_2$site_avg_biomass
-      LER_record_fract_sp2 <- data.frame(j, r, spp_combos[i, ], LER_fract_sp) ##species 2 only
+      spp<-spp_combos$sp_2[i]
+      LER_record_fract_sp2 <- data.frame(j, r, spp, spp_combos[i, ], LER_fract_sp) ##species 2 only
       LER_fract <-rbind(LER_record_fract_sp1, LER_record_fract_sp2)
       LER_output_row_fract <- bind_rows(LER_output_row_fract, LER_fract)
     }
@@ -168,14 +221,60 @@ for (j in unique(data_for_LER$season)){
   }
 LER_row_summary_fract <- LER_output_row_fract %>% 
   mutate(j = factor(j, levels = c("summer", "winter"))) %>% 
-  group_by(j, species, sp_1, sp_2) %>% 
+  group_by(j, spp, sp_1, sp_2) %>% 
   summarize(mean_LER_fract = mean(LER_fract_sp), ci_LER_fract = 2*sd(LER_fract_sp)/sqrt(6))%>% 
   mutate(CropTrt = paste0(sp_1, "-", sp_2))
 
-ggplot(LER_row_summary_fract, aes(x=CropTrt, y=mean_LER_fract, group = species)) +
-  geom_bar(stat="identity", aes(fill=species)) +
+ggplot(LER_row_summary_fract, aes(x=CropTrt, y=mean_LER_fract, group = spp)) +
+  geom_bar(stat="identity", aes(fill=spp)) +
   geom_errorbar(aes(ymin=mean_LER_fract-ci_LER_fract, ymax=mean_LER_fract+ci_LER_fract), width=0.2) +
-  facet_grid(species~j) +
+  facet_grid(spp~j) +
+  geom_hline(yintercept = 0.5, linetype="dashed") +
+  scale_fill_manual(values=c("#AF601A", "#8E44AD", "#196F3D")) +
+  labs(x="Crop Mix", y="LERfraction [+/- 95% CI]") +
+  theme_bw(base_size = 24, base_family = "Helvetica") +
+  theme(axis.text.x = element_text(size=14, angle=30),
+        legend.position = "none")
+
+#visualizing LER Factors by CropCycle
+LER_output_row_fract_2 <- data.frame(CpCycle = c(), row = c(), CropSp = c(), croptrt = c(), LER_fract = c())
+for (f in 1:4){
+  season_data <- data_for_LER_row %>%
+    filter(CpCycle == f)
+  for(r in 1:6){
+    season_data %>%
+      filter(RowNum == r)
+    for (i in 1:nrow(spp_combos)){
+      mixed_1 <- season_data %>%
+        filter(CropTrt == paste(spp_combos$sp_1[i], spp_combos$sp_2[i], sep="") &
+                 CropSp == spp_combos$sp_1[i])
+      mono_1 <- season_data %>%
+        filter(CropTrt == spp_combos$sp_1[i] & CropSp == spp_combos$sp_1[i])
+      mixed_2 <- season_data %>%
+        filter(CropTrt == paste(spp_combos$sp_1[i], spp_combos$sp_2[i], sep="") &
+                 CropSp == spp_combos$sp_2[i])
+      mono_2 <- season_data %>%
+        filter(CropTrt == spp_combos$sp_2[i] & CropSp == spp_combos$sp_2[i])
+      LER_fract_sp<- mixed_1$site_avg_biomass / mono_1$site_avg_biomass
+      spp<-spp_combos$sp_1[i]
+      LER_record_fract_sp1 <- data.frame(f, r, spp, spp_combos[i, ], LER_fract_sp) ###species 1 only
+      LER_fract_sp <- mixed_2$site_avg_biomass / mono_2$site_avg_biomass
+      spp<-spp_combos$sp_2[i]
+      LER_record_fract_sp2 <- data.frame(f, r, spp, spp_combos[i, ], LER_fract_sp) ##species 2 only
+      LER_fract_2 <-rbind(LER_record_fract_sp1, LER_record_fract_sp2)
+      LER_output_row_fract_2 <- bind_rows(LER_output_row_fract_2, LER_fract_2)
+    }
+  }
+}
+LER_row_summary_fract_2 <- LER_output_row_fract_2 %>% 
+  group_by(f, spp, sp_1, sp_2) %>% 
+  summarize(mean_LER_fract = mean(LER_fract_sp), ci_LER_fract = 2*sd(LER_fract_sp)/sqrt(6))%>% 
+  mutate(CropTrt = paste0(sp_1, "-", sp_2))
+
+ggplot(LER_row_summary_fract_2, aes(x=CropTrt, y=mean_LER_fract, group = spp)) +
+  geom_bar(stat="identity", aes(fill=spp)) +
+  geom_errorbar(aes(ymin=mean_LER_fract-ci_LER_fract, ymax=mean_LER_fract+ci_LER_fract), width=0.2) +
+  facet_grid(spp~f) +
   geom_hline(yintercept = 0.5, linetype="dashed") +
   scale_fill_manual(values=c("#AF601A", "#8E44AD", "#196F3D")) +
   labs(x="Crop Mix", y="LERfraction [+/- 95% CI]") +
@@ -249,7 +348,7 @@ LER_column_ci <- LER_output_column %>%
   group_by(j, sp_1, sp_2) %>% 
   summarize(mean_LER = mean(LER), ci_LER = 2*sd(LER)/sqrt(6))
 
-## Biomass visualization per species
+## Biomass visualization per species by season
 for(s in species){
   data_for_figure <- total_biomass %>% 
     ungroup() %>%
@@ -269,7 +368,32 @@ for(s in species){
     scale_fill_manual(values=as.character(unique(data_for_figure$color_set))) +
     theme_bw(base_size = 20, base_family = "Helvetica") +
     theme(legend.position="none")
+  
 }
+
+## Biomass visualization per species by Crop Cycle
+for(s in species){
+  data_for_figure <- total_biomass %>% 
+    ungroup() %>%
+    filter(CropSp == s) %>%
+    mutate(CropTrt = factor(CropTrt, levels = str_subset(treatments$treatments, s))) %>%
+    group_by(CpCycle, CropTrt) %>%
+    summarize(avg_stem_mass = mean(avg_LeavesStems_tha/(0.01*avg_StemCount), na.rm=TRUE),
+              ci_stem_mass = 2*sd(avg_LeavesStems_tha/(0.01*avg_StemCount), na.rm=TRUE)/sqrt(n())) %>% 
+    left_join(treatments, by = c("CropTrt" = "treatments")) %>% 
+    mutate(CropTrt = factor(CropTrt, levels = str_subset(treatments$treatments, s)))
+  
+  ggplot(data_for_figure, aes(x=CropTrt, y=avg_stem_mass)) +
+    geom_bar(stat="identity", aes(fill=CropTrt)) +
+    geom_errorbar(aes(ymin = avg_stem_mass-ci_stem_mass, ymax = avg_stem_mass+ci_stem_mass), width=0.2) +
+    facet_grid(.~CpCycle) +
+    labs(x="Crop Mix", y="Fresh Mass / Individual [g +/- 95% CI]", title = paste0(s)) +
+    scale_fill_manual(values=as.character(unique(data_for_figure$color_set))) +
+    theme_bw(base_size = 20, base_family = "Helvetica") +
+    theme(legend.position="none")
+  
+}
+
 
 ## ANOVA for total biomass per treatment
 
@@ -330,13 +454,13 @@ for(s in species){
     mutate(avg_drymass = avg_LeavesStems_tha*moisture_factor) %>%
     filter(CropSp == s)
   
-  test <- aov(avg_LeavesStems_tha ~  CropTrt + season, data=data_for_analysis)
+  test <- aov(avg_LeavesStems_tha ~  CropTrt*season, data=data_for_analysis)
   print(paste(s, "- Fresh Mass [t/ha]"))
   print(summary(test))
   print(HSD.test(test, "CropTrt")$groups)
   print(HSD.test(test, "season")$groups)
   
-  test <- aov(avg_drymass ~  CropTrt + season, data=data_for_analysis)
+  test <- aov(avg_drymass ~  CropTrt*season, data=data_for_analysis)
   print(paste(s, "- Dry Mass"))
   print(summary(test))
   print(HSD.test(test, "CropTrt")$groups)
@@ -423,3 +547,9 @@ ttest_data_SSVB<- ttest_data %>%
   filter(spp == "SS-VB")
 
 t.test(ttest_data_SSVB$mean_LER,mu=1, alternative='greater')
+
+##ANOVA for mean biomass by treatment
+aov_avgbiomass<- aov(avg_LeavesStems_tha ~  CropTrt*season, data=total_biomass)
+print(summary(aov_avgbiomass))
+print(HSD.test(aov_avgbiomass, "CropTrt")$groups)
+print(HSD.test(aov_avgbiomass, "season")$groups)
